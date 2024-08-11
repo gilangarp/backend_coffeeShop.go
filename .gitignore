@@ -1,17 +1,3 @@
-# Direktori bin dan pkg
-/bin/
 /pkg/
 
-# File hasil build
-*.exe
-*.out
-*.test
-
-# Direktori vendor (opsional, tergantung pada kebutuhan)
-vendor/
-
-# File log
-*.log
-
-# File konfigurasi lokal
 .env
