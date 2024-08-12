@@ -8,5 +8,7 @@ import (
 func NewRouter(db *sqlx.DB) *gin.Engine {
 	router := gin.Default()
 
+	authRouter(router , db)
+	
 	return router
 }
