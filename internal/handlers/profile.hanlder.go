@@ -16,7 +16,7 @@ func NewProfileHandler(r repository.ProfileRepositoryInterface) *ProfileHandler 
 	return &ProfileHandler{r}
 }
 
-func(h *ProfileHandler)CreateProfile(ctx *gin.Context){
+func (h *ProfileHandler)CreateProfile(ctx *gin.Context){
 	response := pkg.NewResponse(ctx)
 	body := models.Profile{}
 	id := ctx.Param("id")
@@ -41,7 +41,7 @@ func(h *ProfileHandler)CreateProfile(ctx *gin.Context){
 	response.Success("create data success", result)
 }
 
-func(h *ProfileHandler)FetchAllProfile(ctx *gin.Context) {
+func (h *ProfileHandler)FetchAllProfile(ctx *gin.Context) {
 	response := pkg.NewResponse(ctx)
 	result, err := h.GetAllData()
 	if err != nil {
@@ -52,7 +52,7 @@ func(h *ProfileHandler)FetchAllProfile(ctx *gin.Context) {
 	response.Success("get data success", result)
 }
 
-func(h *ProfileHandler)FetchDetailProfile(ctx *gin.Context) {
+func (h *ProfileHandler)FetchDetailProfile(ctx *gin.Context) {
 	response := pkg.NewResponse(ctx)
 	id := ctx.Param("id")
 	
