@@ -95,3 +95,60 @@ func (h *AuthHandler) FetchAllUser(ctx *gin.Context) {
 
 	response.Success("get data success", result)
 }
+
+func (h *AuthHandler) FetchDetailUser(ctx *gin.Context) {
+	response := pkg.NewResponse(ctx)
+	id := ctx.Param("id")
+
+	result, err := h.GetDetailData(id)
+	if err != nil {
+		response.InternalServerError("get data failed", err.Error())
+		return
+	}
+
+	response.Success("get data success", result)
+}
+
+func (h *AuthHandler) Update(ctx *gin.Context) {
+	response := pkg.NewResponse(ctx)
+	body := models.User{}
+
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		response.InternalServerError("get data failed", err.Error())
+		return
+	}
+
+	_ ,err := govalidator.ValidateStruct(&body)
+	if err != nil {
+		response.BadRequest("create data failed", err.Error())
+		return
+	}
+
+	body.Password , err = pkg.HashPassword(body.Password)
+	if err != nil {
+		response.BadRequest("create data failed", err.Error())
+		return
+	}
+
+	id := ctx.Param("id")
+	result, err := h.UpdateData(&body, id)
+	if err != nil {
+		response.InternalServerError("get data failed", err.Error())
+		return
+	}
+
+	response.Success("get data success", result)
+}
+
+func (h *AuthHandler) Delete(ctx *gin.Context) {
+	response := pkg.NewResponse(ctx)
+	id := ctx.Param("id")
+
+	result, err := h.DeleteData(id)
+	if err != nil {
+		response.InternalServerError("Delete data failed", err.Error())
+		return
+	}
+
+	response.Success("Delete data success", result)
+}

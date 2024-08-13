@@ -20,9 +20,9 @@ type UserDetail struct {
 
 type UserLogin struct {
 	ID         string    `db:"id" json:"id" valid:"-"`
-	Email     string    `db:"email" json:"email" valid:"email"`
+	Email      string    `db:"email" json:"email" valid:"email"`
 	Password   string    `db:"password" json:"password" valid:"stringlength(6|100)~password minimum 6 characters"`
-	Phone     string    `db:"phone" json:"phone" valid:"_"`
+	Phone      string    `db:"phone" json:"phone" valid:"-"`
 }
 
 type Users []User
