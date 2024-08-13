@@ -17,7 +17,7 @@ func authRouter(g *gin.Engine , d * sqlx.DB) {
 	
 	router.POST("/register" , handler.Register)
 	router.POST("/login" , handler.Login)
-	router.GET("/" , middleware.AuthJwtMiddleware(), handler.FetchAllUser)
+	router.GET("/" , handler.FetchAllUser)
 	router.GET("/:id", middleware.AuthJwtMiddleware(),handler.FetchDetailUser)
 	router.PATCH("/:id",handler.Update)	
 	router.DELETE("/:id",handler.Delete)		

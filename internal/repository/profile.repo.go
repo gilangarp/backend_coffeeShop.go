@@ -42,7 +42,7 @@ func (r *ProfileRepository) CreatedData(body *models.Profile, id string) (string
 		return "", err
 	}
 
-	return fmt.Sprintf("welcome, %s! Congratulations on creating your profile.", body.Display_name), nil
+	return "Congratulations on creating your profile.", nil
 }
 
 func (r *ProfileRepository) GetAllData() (*models.Profiles , error){

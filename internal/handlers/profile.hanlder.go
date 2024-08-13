@@ -1,6 +1,9 @@
 package handlers
 
 import (
+	"fmt"
+	"math/rand"
+
 	"backend_coffeeShop.go/internal/models"
 	"backend_coffeeShop.go/internal/repository"
 	"backend_coffeeShop.go/pkg"
@@ -10,10 +13,11 @@ import (
 
 type ProfileHandler struct {
 	repository.ProfileRepositoryInterface
+	pkg.Cloudinary
 }
 
-func NewProfileHandler(r repository.ProfileRepositoryInterface) *ProfileHandler {
-	return &ProfileHandler{r}
+func NewProfileHandler(r repository.ProfileRepositoryInterface , cld pkg.Cloudinary) *ProfileHandler {
+	return &ProfileHandler{r , cld}
 }
 
 func (h *ProfileHandler)CreateProfile(ctx *gin.Context){
@@ -26,19 +30,40 @@ func (h *ProfileHandler)CreateProfile(ctx *gin.Context){
 		return
 	}
 
-	_ ,err := govalidator.ValidateStruct(&body)
+	if _, err := govalidator.ValidateStruct(&body); err != nil {
+        response.BadRequest("create data failed", err.Error())
+        return
+    }
+
+	/* img */
+	file, header, err := ctx.Request.FormFile("image")
 	if err != nil {
-		response.BadRequest("create data failed", err.Error())
+		response.BadRequest("create data failed, upload file failed", err.Error())
 		return
 	}
+
+	mimeType := header.Header.Get("Content-Type")
+	if mimeType != "image/jpg" && mimeType != "image/png" {
+		response.BadRequest("create data failed, upload file failed, wrong file type", err.Error())
+		return
+	}
+
+	randomNumber := rand.Int()
+	fileName := fmt.Sprintf("go-profile-%d", randomNumber)
+	uploadResult, err := h.UploadFile(ctx, file, fileName)
+	if err != nil {
+		response.BadRequest("create data failed, upload file failed", err.Error())
+		return
+	}
+	body.Image = uploadResult.SecureURL
 
 	result, err := h.CreatedData(&body, id)
-	if err != nil {
-		response.InternalServerError("create data failed", err.Error())
-		return
-	}
+    if err != nil {
+        response.InternalServerError("create data failed", err.Error())
+        return
+    }
 
-	response.Success("create data success", result)
+    response.Success("create data success", result)
 }
 
 func (h *ProfileHandler)FetchAllProfile(ctx *gin.Context) {
