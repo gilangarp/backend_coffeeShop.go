@@ -9,6 +9,7 @@ func NewRouter(db *sqlx.DB) *gin.Engine {
 	router := gin.Default()
 
 	authRouter(router , db)
+	profileRouter(router , db)
 	
 	return router
 }
