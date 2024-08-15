@@ -11,6 +11,7 @@ func NewRouter(db *sqlx.DB) *gin.Engine {
 	authRouter(router , db)
 	profileRouter(router , db)
 	categoryRouter(router,db)
-	
+	productRouter(router , db)
+
 	return router
 }
