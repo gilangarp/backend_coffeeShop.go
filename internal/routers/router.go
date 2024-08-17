@@ -13,6 +13,7 @@ func NewRouter(db *sqlx.DB) *gin.Engine {
 	categoryRouter(router,db)
 	productRouter(router , db)
 	promoRouter(router , db)
+	favorite(router , db)
 
 	return router
 }
