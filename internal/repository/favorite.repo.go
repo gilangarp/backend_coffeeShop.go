@@ -21,7 +21,6 @@ func NewFavoriteRepository(db *sqlx.DB) *FavoriteRepository {
 	return &FavoriteRepository{db}
 }
 
-/* Created Favorite */
 func (r *FavoriteRepository) CreatedData(body *models.Favorite , id string) (string, error){
 	query := `
 	INSERT INTO public.favorite (
@@ -39,7 +38,6 @@ func (r *FavoriteRepository) CreatedData(body *models.Favorite , id string) (str
 	return "Product successfully added to favorites", nil
 }
 
-/* Get Detail Favorite */
 func (r *FavoriteRepository) GetDetailData(id string) (*models.FavoriteGets, error) {
     query := `SELECT 
         p2.display_name, 
@@ -61,7 +59,6 @@ func (r *FavoriteRepository) GetDetailData(id string) (*models.FavoriteGets, err
     return &data, nil
 }
 
-/* Delete Favorite */
 func (r *FavoriteRepository) DeleteData(id string) (string, error) {
     query := `DELETE FROM public.favorite WHERE id = $1`
     result, err := r.Exec(query, id)
