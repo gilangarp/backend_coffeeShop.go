@@ -25,21 +25,20 @@ func NewProductRepository(db *sqlx.DB) *ProductRepository {
 	return &ProductRepository{db}
 }
 
-/* Created Product */
 func (r *ProductRepository) CreatedProduct(body *models.Product) (string, error) {
     query := `
     INSERT INTO public.product(
         product_name,
-        img_product,
-        product_price,
-        product_description,
+        image_url,
+        price,
+        description,
         category_id
         )
     VALUES
         ($1, $2, $3, $4, $5)
     `
 
-    _, err := r.Exec(query, body.Product_name, body.Img_product, body.Product_price, body.Product_description, body.Category_id)
+    _, err := r.Exec(query, body.Product_name, body.Image_url, body.Price, body.Description, body.Category_id)
     if err != nil {
         return "", err
     }
@@ -47,10 +46,9 @@ func (r *ProductRepository) CreatedProduct(body *models.Product) (string, error)
     return fmt.Sprintf("product %s has been created",body.Product_name), nil
 }
 
-/* Get All Product */
 func (r *ProductRepository) GetAllProduct(params *models.Filter) (*models.Products, error) {
     query := `
-        SELECT p.id, p.product_name, p.img_product, p.product_price, p.product_description, c.categorie_name, p.created_at 
+        SELECT p.id, p.product_name, p.image_url, p.price, p.description, c.categorie_name, p.created_at 
         FROM public.product p
         JOIN public.category c ON p.category_id = c.id
     `
@@ -86,7 +84,7 @@ func (r *ProductRepository) GetAllProduct(params *models.Filter) (*models.Produc
         default:
             return nil, fmt.Errorf("invalid sort parameter: %s", params.SortBy)
         }
-        query += fmt.Sprintf(" ORDER BY p.product_price %s", sortOrder)
+        query += fmt.Sprintf(" ORDER BY p.price %s", sortOrder)
     }
 
     if params.Limit > 0 && params.Page > 0 {
@@ -104,9 +102,8 @@ func (r *ProductRepository) GetAllProduct(params *models.Filter) (*models.Produc
     return &data, nil
 }
 
-/* Get Detail Product */
 func (r *ProductRepository) GetDetailProduct(id string) (*models.ProductDetail, error) {
-	query := `SELECT p.id , p.product_name ,p.img_product ,p.product_price ,p.product_description ,c.categorie_name , p.created_at  FROM public.product p 
+	query := `SELECT p.id , p.product_name ,p.image_url ,p.price ,p.description ,c.categorie_name , p.created_at  FROM public.product p 
     join category c on p.category_id = c.id 
     WHERE p.id = $1`
 	data := models.ProductDetail{}
@@ -134,30 +131,30 @@ func (r *ProductRepository) EditProduct(body *models.EditProduct, id string) (*m
         condition = true
     }
 
-    if body.Img_product != "" {
+    if body.Image_url != "" {
         if condition {
             query += ", "
         }
-        query += fmt.Sprintf(`img_product = $%d`, len(values)+1)
-        values = append(values, body.Img_product)
+        query += fmt.Sprintf(`image_url = $%d`, len(values)+1)
+        values = append(values, body.Image_url)
         condition = true
     }
 
-    if body.Product_price > 0 {
+    if body.Price > 0 {
         if condition {
             query += ", "
         }
-        query += fmt.Sprintf(`product_price = $%d`, len(values)+1)
-        values = append(values, body.Product_price)
+        query += fmt.Sprintf(`price = $%d`, len(values)+1)
+        values = append(values, body.Price)
         condition = true
     }
 
-    if body.Product_description != "" {
+    if body.Description != "" {
         if condition {
             query += ", "
         }
-        query += fmt.Sprintf(`product_description = $%d`, len(values)+1)
-        values = append(values, body.Product_description)
+        query += fmt.Sprintf(`description = $%d`, len(values)+1)
+        values = append(values, body.Description)
         condition = true
     }
 
@@ -174,16 +171,16 @@ func (r *ProductRepository) EditProduct(body *models.EditProduct, id string) (*m
         return nil, fmt.Errorf("no fields to update")
     }
 
-    query += fmt.Sprintf(` WHERE id = $%d RETURNING product_name, img_product, product_price, product_description, category_id`, len(values)+1)
+    query += fmt.Sprintf(` WHERE id = $%d RETURNING product_name, image_url, price, description, category_id`, len(values)+1)
     values = append(values, id)
 
     row := r.DB.QueryRow(query, values...)
     var product models.EditProduct
     err := row.Scan(
         &product.Product_name,
-        &product.Img_product,
-        &product.Product_price,
-        &product.Product_description,
+        &product.Image_url,
+        &product.Price,
+        &product.Description,
         &product.Category_id,
     )
 

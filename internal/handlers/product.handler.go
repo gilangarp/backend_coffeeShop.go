@@ -10,6 +10,7 @@ import (
 	"backend_coffeeShop.go/internal/repository"
 	"backend_coffeeShop.go/pkg"
 	"github.com/gin-gonic/gin"
+	"github.com/lib/pq"
 )
 
 type ProductHandler struct {
@@ -21,7 +22,7 @@ func NewProductHandler(r repository.ProductRepositoryInterface, cld pkg.Cloudina
 	return &ProductHandler{r,cld}
 }
 
-func (h *ProductHandler) PostProduct(ctx *gin.Context){
+func (h *ProductHandler) Post(ctx *gin.Context){
 	response := pkg.NewResponse(ctx)
 	product := models.Product{}
 
@@ -30,22 +31,25 @@ func (h *ProductHandler) PostProduct(ctx *gin.Context){
 		return
 	}
 
-	/* file */
 	file , header , err := ctx.Request.FormFile("productImg")
 	if err != nil {
 		response.BadRequest("create data failed, upload file failed", err.Error())
 		return
 	}
-
-	/* get from req body */
-	fmt.Println(header.Size)
+	
 	mimeType := header.Header.Get("Content-Type")
 	if mimeType != "image/jpg" && mimeType != "image/png" {
 		response.BadRequest("create data failed, upload file failed, wrong file type", err)
 		return
 	}
 
-	/* name */
+	const MaxFileSize = 5242880
+	fileSize := header.Size
+    if fileSize > MaxFileSize {
+        response.BadRequest("create data failed, file too large", nil)
+        return
+    }
+
 	randomNumber := rand.Int()
     fileName := fmt.Sprintf("go-product-%d", randomNumber)
 	uploadResult, err := h.UploadFile(ctx, file, fileName)
@@ -53,18 +57,22 @@ func (h *ProductHandler) PostProduct(ctx *gin.Context){
 		response.BadRequest("create data failed, upload file failed", err.Error())
 		return
 	}
-	product.Img_product = uploadResult.SecureURL
+	product.Image_url = uploadResult.SecureURL
 
 	result, err := h.CreatedProduct(&product)
 	if err != nil {
-		response.BadRequest("create data failed,", err.Error())
+		if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
+			response.BadRequest("create data failed, product name already exists", err.Error())
+		} else {
+			response.BadRequest("create data failed,", err.Error())
+		}
 		return
 	}
 
 	response.Success("create data success", result)
 }
 
-func (h *ProductHandler) FetchAllProduct(ctx *gin.Context){
+func (h *ProductHandler) FetchAll(ctx *gin.Context){
 	response := pkg.NewResponse(ctx)
 	category := ctx.Query("category")
 	favorite := ctx.Query("favoriteNpromo")
@@ -100,7 +108,7 @@ func (h *ProductHandler) FetchAllProduct(ctx *gin.Context){
 
 }
 
-func (h *ProductHandler) FetchDetailProduct(ctx *gin.Context){
+func (h *ProductHandler) FetchDetail(ctx *gin.Context){
 	response := pkg.NewResponse(ctx)
 	id := ctx.Param("id")
 
@@ -128,28 +136,34 @@ func (h *ProductHandler) Update(ctx *gin.Context) {
 	if err != nil {
 		if err.Error() == "http: no such file" {
 			fmt.Println("No file uploaded, skipping image update.")
-			product.Img_product = "" 
+			product.Image_url = "" 
 		} else {
-			response.BadRequest("create data failed, upload file failed", err.Error())
+			response.BadRequest("update data failed, upload file failed", err.Error())
 			return
 		}
 	} else {
 		fmt.Println(header.Size)
 		mimeType := header.Header.Get("Content-Type")
 		if mimeType != "image/jpg" && mimeType != "image/png" {
-			response.BadRequest("create data failed, upload file failed, wrong file type", err)
+			response.BadRequest("update data failed, upload file failed, wrong file type", err)
 			return
 		}
 
-		/* name */
+		const MaxFileSize = 5242880
+		fileSize := header.Size
+    	if fileSize > MaxFileSize {
+    	    response.BadRequest("update data failed, file too large", nil)
+    	    return
+    	}
+
 		randomNumber := rand.Int()
 		fileName := fmt.Sprintf("go-product-%d", randomNumber)
 		uploadResult, err := h.UploadFile(ctx, file, fileName)
 		if err != nil {
-			response.BadRequest("create data failed, upload file failed", err.Error())
+			response.BadRequest("update data failed, upload file failed", err.Error())
 			return
 		}
-		product.Img_product = uploadResult.SecureURL
+		product.Image_url = uploadResult.SecureURL
 	}
 
 	result, err := h.EditProduct(&product, id)

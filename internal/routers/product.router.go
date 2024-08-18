@@ -15,9 +15,9 @@ func productRouter(g *gin.Engine, d *sqlx.DB) {
 	var cld pkg.Cloudinary = *pkg.NewCloudinaryUtil()
 	handler := handlers.NewProductHandler(repo, cld)
 
-	router.POST("/", handler.PostProduct)
-	router.GET("/", handler.FetchAllProduct)
-	router.GET("/:id", handler.FetchDetailProduct)
+	router.POST("/", handler.Post)
+	router.GET("/", handler.FetchAll)
+	router.GET("/:id", handler.FetchDetail)
 	router.PATCH("/:id" , handler.Update)
 	router.DELETE("/:id", handler.Delete)
 
